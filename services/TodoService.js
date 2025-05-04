@@ -1,15 +1,15 @@
-// RemoteProductService.js
+// RemoteTodoervice.js
 
-const BASE_URL = "http://unidb.openlab.uninorte.edu.co";
-const CONTRACT_KEY = "Todo-tubens-14";
+const BASE_URL = "https://unidb.openlab.uninorte.edu.co";
+const CONTRACT_KEY = "todo-tubens-144";
 const TABLE = "todo";
 
-//https://unidb.openlab.uninorte.edu.co/e83b7ac8-bdad-4bb8-a532-6aaa5fddefa4/data/products/all?format=json
+//https://unidb.openlab.uninorte.edu.co/e83b7ac8-bdad-4bb8-a532-6aaa5fddefa4/data/Todo/all?format=json
 
 const TodoService = {
   /**
-   * Fetches all products.
-   * @returns {Promise<Array<Object>>} resolves to an array of product objects
+   * Fetches all Todo.
+   * @returns {Promise<Array<Object>>} resolves to an array of Todo objects
    */
   async getTodo() {
     const url = `${BASE_URL}/${CONTRACT_KEY}/data/${TABLE}/all?format=json`;
@@ -31,16 +31,16 @@ const TodoService = {
         };
       });
 
-      console.log("ProductService getProducts ok");
+      
       return todos;
     } catch (err) {
-      console.error("getProducts error:", err);
+      console.error("getTodo error:", err);
       throw err;
     }
   },
 
   /**
-   * Adds a new product.
+   * Adds a new Todo.
    * @param {Object} todo – must match your backend schema
    * @returns {Promise<boolean>} true on 201, false otherwise
    */
@@ -63,29 +63,30 @@ const TodoService = {
         // const record = decoded.data; // { entry_id, data: { … } }
         // const { entry_id, data: fields } = record;
         // // Flatten into { id, …fields }
-        // const newProduct = { id: entry_id, ...fields };
-        //console.log("addProduct →", newProduct);
+        // const newTodo = { id: entry_id, ...fields };
+        //console.log("addTodo →", newTodo);
       } else {
         const text = await res.text();
-        console.error(`addProduct failed ${res.status}:`, text);
+        console.error(`addTodo failed ${res.status}:`, text);
         return null;
       }
     } catch (err) {
-      console.error("addProduct error:", err);
+      console.error("addTodo error:", err);
       return null;
     }
   },
 
   /**
-   * Updates an existing product by id.
-   * @param {Object} product – must include an `id` field
+   * Updates an existing Todo by id.
+   * @param {Object} Todo – must include an `id` field
    * @returns {Promise<boolean>} true on 200
    */
   async updateTodo(todo) {
-    if (!todo.id) throw new Error("product.id is required");
-    console.log("updateProduct", todo);
+    console.log("updateTodo", todo);
+    if (!todo.id) throw new Error("Todo.id is required");
+   
     const { id, ...fields } = todo;
-    console.log("updateProduct id ", id, "fields", fields);
+    console.log("updateTodo id ", id, "fields", fields);
     const url = `${BASE_URL}/${CONTRACT_KEY}/data/${TABLE}/update/${id}`;
 
     try {
@@ -95,28 +96,31 @@ const TodoService = {
         body: JSON.stringify({ data: fields })
       });
 
-      console.log(`updateProduct status ${res.status}`);
+      console.log(`updateTodo status ${res.status}`);
       if (res.status === 200) {
         return true;
       } else {
         const text = await res.text();
-        console.error(`updateProduct failed ${res.status}:`, text);
+        console.error(`updateTodo failed ${res.status}:`, text);
         return false;
       }
     } catch (err) {
-      console.error("updateProduct error:", err);
+      console.error("updateTodo error:", err);
       return false;
     }
   },
 
   /**
-   * Deletes a product by id.
-   * @param {{ id: string } | string} productOrId
+   * Deletes a Todo by id.
+   * @param {{ id: string } | string} TodoOrId
    * @returns {Promise<boolean>}
    */
   async deleteTodo(todoOrId) {
+    console.log(todoOrId);
+
     const id = typeof todoOrId === "string" ? todoOrId : todoOrId.id;
-    if (!id) throw new Error("product.id is required");
+    
+    if (!id) throw new Error("Todo.id is required");
     const url = `${BASE_URL}/${CONTRACT_KEY}/data/${TABLE}/delete/${id}`;
 
     try {
@@ -125,25 +129,25 @@ const TodoService = {
         headers: { "Content-Type": "application/json; charset=UTF-8" }
       });
 
-      console.log(`deleteProduct status ${res.status}`);
+      console.log(`deleteTodo status ${res.status}`);
       if (res.status === 200) {
         return true;
       } else {
         const text = await res.text();
-        console.error(`deleteProduct failed ${res.status}:`, text);
+        console.error(`deleteTodo failed ${res.status}:`, text);
         return false;
       }
     } catch (err) {
-      console.error("deleteProduct error:", err);
+      console.error("deleteTodo error:", err);
       return false;
     }
   },
 
   /**
-   * Deletes *all* products by fetching them and deleting one by one.
+   * Deletes *all* Todo by fetching them and deleting one by one.
    * @returns {Promise<boolean>}
    */
-  async deleteTodo() {
+  async deleteTodos() {
     try {
       const all = await this.getTodo();
       for (const p of all) {
@@ -153,7 +157,7 @@ const TodoService = {
       }
       return true;
     } catch (err) {
-      console.error("deleteProducts error:", err);
+      console.error("deleteTodo error:", err);
       return false;
     }
   }

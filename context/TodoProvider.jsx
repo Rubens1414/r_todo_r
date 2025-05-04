@@ -7,10 +7,10 @@ export const TodoContext = createContext({
   todos: [],
   loading: false,
   error: null,
-  refreshProducts: () => {},
-  createProduct: async (data) => {},
-  updateProduct: async (id, data) => {},
-  deleteProduct: async (id) => {}
+  refreshTodos: () => {},
+  createTodo: async (data) => {},
+  updateTodo: async (id, data) => {},
+  deleteTodo: async (id) => {}
 });
 
 // Provider component
@@ -19,71 +19,78 @@ export const TodoProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+
   // Initial fetch
-  const fetchTodo = async () => {
+  const fetchTodos = async () => {
     setLoading(true);
     try {
       const data = await TodoService.getTodo();
+      console.log("fetchTodos", data);
       setTodos(data);
     } catch (err) {
-      setError("Failed to fetch products.");
-      console.error("Failed to fetch products:", err);
+      setError("Failed to fetch Todo.");
+      console.error("Failed to fetch Todo:", err);
     } finally {
+    
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchTodo();
+    fetchTodos();
   }, []);
 
-  // Create a new product
+  // Create a new Todo
   const createTodo= async (todoData) => {
     setLoading(true);
     try {
       await TodoService.addTodo(todoData);
-      fetchTodo();
+      fetchTodos();
     } catch (err) {
-      setError("Failed to create product.");
-      console.error("Create product failed:", err);
+      setError("Failed to create Todo.");
+      console.error("Create Todo failed:", err);
     } finally {
       setLoading(false);
     }
     return null;
   };
 
-  // Update an existing product
-  const updateTodo = async (product) => {
+  // Update an existing Todo
+  const updateTodo = async (Todo) => {
+    
     setLoading(true);
+    console.log("updateTodo", Todo);
     try {
-      //const payload = { id, ...productData };
-      await TodoService.updateTodo(product);
-      await fetchTodo();
+      //const payload = { id, ...TodoData };
+      await TodoService.updateTodo(Todo);
+      await fetchTodos();
       //   if (success) {
-      //     setProducts((prev) =>
-      //       prev.map((p) => (p.id === id ? { id, ...productData } : p))
+      //     setTodo((prev) =>
+      //       prev.map((p) => (p.id === id ? { id, ...TodoData } : p))
       //     );
       //     return true;
     } catch (err) {
-      setError("Failed to update product.");
-      console.error("Update product failed:", err);
+      setError("Failed to update Todo.");
+      console.error("Update Todo failed:", err);
     } finally {
       setLoading(false);
     }
     return false;
   };
 
-  // Delete a product by id
+  // Delete a Todo by id
   const deleteTodo = async (id) => {
     setLoading(true);
     try {
+      console.log("deleteTodo", id);
       const success = await TodoService.deleteTodo(id);
+      console.log(success)
       if (success) {
         setTodos((prev) => prev.filter((p) => p.id !== id));
         return true;
       }
     } catch (err) {
-      console.error("Delete product failed:", err);
+      console.error("Delete Todo failed:", err);
     } finally {
       setLoading(false);
     }
@@ -96,7 +103,7 @@ export const TodoProvider = ({ children }) => {
         todos,
         loading,
         error,
-        refreshTodo: fetchTodo,
+        refreshTodos: fetchTodos,
         createTodo,
         updateTodo,
         deleteTodo

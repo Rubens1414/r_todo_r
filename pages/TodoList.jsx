@@ -3,6 +3,7 @@ import { View, Text, FlatList, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TodoContext } from "../context/TodoProvider";
 import { useContext } from "react";
+import { ActivityIndicator } from "react-native-paper";
 
 import {
   FAB,
@@ -16,10 +17,14 @@ import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 
 export default function TodoList() {
   const [visible, setVisible] = React.useState(false);
-  const [data, setData] = useState([{ id: 1, name: "Item 1" }]);
   const [currentItem, setCurrentItem] = useState(null);
   const [inputValue, setInputValue] = useState("");
-  const {updateTodo,createTodo,todos} = useContext(TodoContext)
+  const {updateTodo,createTodo,todos,refreshTodos,deleteTodo,loading} = useContext(TodoContext)
+  
+  useEffect(() => {
+   
+    refreshTodos()
+ },[])
 
   const renderItem = ({ item }) => {
     const renderRightActions = () => (
@@ -28,10 +33,7 @@ export default function TodoList() {
       </View>
     );
 
-    useEffect(() => {
-       updateTodo()
-    },[])
-
+   
     return (
       <Swipeable
         friction={2}
@@ -63,22 +65,19 @@ export default function TodoList() {
     setVisible(true);
   };
   
-  const saveItem = () => {
+  const saveItem =async () => {
     if (currentItem) {
       // Edit existing item
-      setData((prevData) =>
-        prevData.map((item) =>
-          item.id === currentItem.id ? { ...item, name: inputValue } : item
-        )
-      );
+      console.log("currentItem",currentItem)
+      await updateTodo({ id: currentItem.id, name: inputValue })
     } else {
       // Add new item
       const newItem = {
-        id: data.length + 1,
+     
         name: inputValue
       };
-      createTodo(newItem)
-      console.log(newItem)
+      await createTodo(newItem)
+     
     }
     setVisible(false);
   };
@@ -89,11 +88,22 @@ export default function TodoList() {
     setVisible(true);
   };
 
-  const deleteItem = (id) => {
-    console.log("Delete item with id:", id);
-    setData((prevData) => prevData.filter((item) => item.id !== id));
+
+  const deleteItem = async (id) => {
+    await deleteTodo(id);
+    
   };
 
+  if (loading === true) {
+    return (
+      <SafeAreaView
+        style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+      >
+        <ActivityIndicator size="large" />
+        <Text>Loading todos...</Text>
+      </SafeAreaView>
+    );
+  }
   return (
     <View style={{ flex: 1 }}>
       <Appbar.Header>
@@ -101,7 +111,7 @@ export default function TodoList() {
       </Appbar.Header>
       <View style={{ flex: 1 }}>
         <FlatList
-          data={data}
+          data={todos}
           renderItem={renderItem}
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={{ padding: 4 }}
